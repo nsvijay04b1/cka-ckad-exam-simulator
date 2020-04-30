@@ -18,8 +18,24 @@
    ```    
 
 * you have the option to tag the image you build ( `image` in file `docker-compose-builder.yaml` )
+   ```
+    gatone:
+     build: ./gateone
+     image: cka-ckad-exam-gateone:latest
+    lab:
+     build: ./lab
+     image: cka-ckad-exam-lab:latest
+   ``` 
 
 * you have the option to chose the DNS settings which will be updated in containers as /etc/resolv.conf ( update `dns_search` and `dns` in file  `docker-compose-builder.yaml` ) 
+   ```
+      dns_search:
+      - corp.example.com
+      - example.com
+      dns:
+      - 10.100.102.1
+      - 10.100.102.2
+   ```
 
 * file `docker-compose-builder.yaml` 
 
@@ -83,63 +99,94 @@ volumes:
 # Step by step adoption 
 **you must install docker before do this**. just copy and paste these shells from the two steps, then visit it from your local browser
 
-### Step 1: Frontend (webpage)
-```
-# you need to change these two env to your real value, if you have no public ip, just set the PUBLIC_IP same as your PRIVATE_IP
-export PUBLIC_IP=47.52.219.131
-export PRIVATE_IP=172.31.63.194
+### Step 1: Install docker-compose 
 
+Make sure that you have docker-compose installed([installation instructions](https://docs.docker.com/compose/install/)). Or you can run the `install-docker-compose.sh` shell scripts.
+```
+sh install-docker-compose.sh
+```
+
+```cat install-docker-compose.sh
 # install docker-compose 
 wget https://www.cnrancher.com/download/compose/v1.23.2-docker-compose-Linux-x86_64
 mv v1.23.2-docker-compose-Linux-x86_64 docker-compose
 chmod +x docker-compose
 mv docker-compose /usr/local/bin/
 docker-compose -v
+```
 
-# gen docker-compose.yaml and up it
-cat > docker-compose.yaml << EOF
-version: "3"
+### Step 2: Git clone repo
 
+```
+git clone https://github.com/nsvijay04b1/cka-ckad-exam-simulator.git 
+```
+
+### Step 3: update docker-compose-builder.yaml
+
+* volumes of `gateone` service 
+   -  Replace `/users/kube/.kube/` with path of KUBECONFIG file of your k8s cluster.
+
+* volumes of `lab` service 
+  -  Replace `/users/kube/LAB/cka-lab` with path of ckad/cka questions folder of yours. 
+  -  All questions are names like 1.html till 24.html for CKA and 1.html till 19.html and copied to respective folders `ckaquestions` and `ckaquestions` at path you would replace `/users/kube/LAB/cka-lab`  with.
+
+```
 services:
-
   gateone:
-    image: satomic/gateone:http
-    ports:
-    - "8000:8000"
-    hostname: kubectl
-    networks:
-    - frontend
     volumes:
     - ssh_key:/root/.ssh/
-    - /root/.kube/:/root/.kube/
-
+    - /users/kube/.kube/:/root/.kube/
   lab:
-    image: satomic/cka_lab
-    entrypoint: /opt/entry.bash
-    ports:
-      - 80:80
-    networks:
-    - frontend
-    environment:
-      GATEONE_HTTP_SERVER: "${PUBLIC_IP}:8000"
+    volumes:
+    - /users/kube/LAB/cka-lab/ckaquestions:/etc/nginx/html/ckaquestions:rw 
+    - /users/kube/LAB/cka-lab/ckadquestions:/etc/nginx/html/ckadquestions:rw 
+  ```
+ 
+* Update DNS values ( refer `/etc/resolv.conf` of you machine) 
 
-networks:
-  frontend: {}
-volumes:
-  ssh_key: {}
-EOF
+  -   `nameserver` in `/etc/resolv.conf ` should go to `dns` 
+  -   `search` in `/etc/resolv.conf ` should go to `dns_search` 
+  
+   ```
+    dns_search:
+    - corp.example.com
+    - example.com
+    dns:
+    - 10.232.217.1
+    - 10.232.217.2
+    ```
 
-docker-compose up -d
+### Step 4: run docker-compose build
 
-docker ps -a | grep satomic
+* Run docker-compose
+```
+docker-compose -f docker-compose-builder.yaml up -d --build
 ```
 
-### Step 2: Backend (k8s)
+* docker images that are build 
+```
+cka-ckad-exam-lab                                                latest              249d378ed8cf        2 hours ago         182MB
+cka-ckad-exam-gateone                                            latest              f86157a11b2a        2 hours ago         1.16GB
+```
+* docker containers running 
+```
+[kube@eaasrt cka-ckad-exam-simulator]$ docker ps | grep cka
+aa7d3b03f8e9        cka-ckad-exam-gateone:latest                 "gateone --log_file_…"   2 hours ago         Up 2 hours          0.0.0.0:9080->8000/tcp                         cka-lab_gateone_1
+1dc478bda507        cka-ckad-exam-lab:latest                     "/opt/entry.bash"        2 hours ago         Up 2 hours          0.0.0.0:80->80/tcp                             cka-lab_lab_1
+```
 
-**if you already have Kubernetes Cluster**, just copy your `kubeconfig.yaml` file contents to the `/root/.kube/config` file in the host for his CKA Practice Environment.
+### Step 4: Accessing the application
+
+In the bowser launch the application with  http://<HOSTNAME> or http://<IP> , where HOSTNAME/IP is from where docker-compose is run.
+   
+   
+
+### Creation of kubernetes cluster in case you didnt had one
+
+**if you already have Kubernetes Cluster**, just copy your `kubeconfig.yaml` file contents to the `/users/kube/.kube/config` file in the host for his CKA Practice Environment.
 ```
 # maybe some command like
-cp /pathto_your_existed/kubeconfig.yaml /root/.kube/config
+cp /pathto_your_existed/kubeconfig.yaml /users/kube/.kube/config
 ```
 
 otherwise you can use [Rancher k3s](https://k3s.io/) to provision a mini Kubernetes to use.
@@ -158,95 +205,9 @@ kubectl --kubeconfig /root/.kube/config get node
 ```
 
 
-## Getting the environment up and ready
-
-### 1. install `docker-compose`
-Make sure that you have docker-compose installed([installation instructions](https://docs.docker.com/compose/install/)). Or you can run the `install-docker-compose.sh` shell scripts.
-```
-sh install-docker-compose.sh
-```
-
-### 2. up it
-
-assume the **PUBLIC IP/PRIVATE IP** of your host (maybe a VM) is `47.52.219.131/172.31.63.194`, you need to change the `environment` values of `GATEONE_HTTP_SERVER` in the file `docker-compose.yaml` or `docker-compose-builder.yaml`
-
-example:
-```
-version: "3"
-
-services:
-
-  gateone:
-    image: satomic/gateone:http
-    ports:
-    - "8000:8000"
-    hostname: kubectl
-    networks:
-    - frontend
-    volumes:
-    - ssh_key:/root/.ssh/
-
-  lab:
-    image: satomic/cka_lab
-    entrypoint: /opt/entry.bash
-    ports:
-      - 80:80
-    networks:
-    - frontend
-    environment:
-      GATEONE_HTTP_SERVER: "47.52.219.131:8000" # you need to change this IP based on your real PUBLIC IP
-
-networks:
-  frontend: {}
-volumes:
-  ssh_key: {}
-```
- 
-To start the lab environment you can do either of the following two:
-
-#### To use the prebuilt images
-run
-```
-docker-compose up -d
-```
-and point your browser to `http://47.52.219.131`
-
-#### To build the images yourself locally 
-run
-```
-docker-compose -f docker-compose-builder.yaml up -d
-```
-and point your browser to `http://47.52.219.131`
-
-
-### 3. provision k8s (k3s)
-
-#### **if you already have Kubernetes Cluster**
-copy your `kubeconfig` file contents to the `/root/.kube/config` file in the host for his CKA Practice Environment.
-```
-# maybe some command like
-cp /pathto_your_existed/kubeconfig.yaml /root/.kube/config
-```
-
-#### Rancher k3s
-otherwise you can use [Rancher k3s](https://k3s.io/) to provision a mini Kubernetes to use.
-```
-export PRIVATE_IP=172.31.63.194
-
-curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--no-deploy traefik" sh -
-
-# check it
-kubectl get node
-
-# copy kubeconfig to /root/.kube/config
-cp /etc/rancher/k3s/k3s.yaml /root/.kube/config
-sed -i "s/localhost/$(echo $PRIVATE_IP)/g" /root/.kube/config
-
-kubectl --kubeconfig /root/.kube/config get node
-```
 
 ## Uninstall
 ```
-docker-compose down
+docker-compose -f docker-compose-builder.yaml down
 /usr/local/bin/k3s-uninstall.sh
 ```
