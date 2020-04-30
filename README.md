@@ -1,13 +1,86 @@
-# CKA Practice Environment
+# CKA / CKAD Practice Exam Simulator
 
-## the MOSTLY DIFFERENCE from the original repo
-thx the orginal repo [arush-sal/cka-practice-environment](https://github.com/arush-sal/cka-practice-environment) by [arush-sal](https://github.com/arush-sal), it's awesome! but hard to use it.
-- only support visit the CKA practice environment with URL `http://localhost` or `http://127.0.0.1`, that's **TOO BAD**, cause this constraint, you can **only use MacBook or CentOS/Ubuntu Desktop verison**, if you wanna use a VM on a Cloud, and visit the environment from your local browser, there is no way for you.
-- and based on my fork, you can **provision the CKA practice environment on a Cloud VM, than visit it with its PUBLIC IP from your local browser**, that's pretty cool
+# the original repos(only support CKA )
 
-![avatar](/images/cka-exam.png)
+* `arush-sal/cka-practice-environment` , it's awesome! but hard to use it. only support visit the CKA practice environment with URL http://localhost or http://127.0.0.1, that's TOO BAD, cause this constraint, you can only use MacBook or CentOS/Ubuntu Desktop verison, if you wanna use a VM on a Cloud, and visit the environment from your local browser, there is no way for you.
 
-## Quick Start (needn't clone the repo)
+* `satomic/cka-practice-environment` fixed it, you can provision the CKA practice environment on a Cloud VM, than visit it with its PUBLIC IP from your local browser, that's cool, BUT you have only CKA option not CKAD too, i want to have both options in single platform.
+
+# With my repo, i support both CKA & CKAD in same browser and more features.
+
+* With my repo `nsvijay04b1/cka-ckad-exam-simulator`, i want to make the test available for both CKA & CKAD. From any browser with http://<PUBLIC_IP>, you can select the test CKA or CKAD and start the test, CKA test timer is 3hrs and CKAD test timer is 2 hrs.
+
+* questions folder is a volume mount  , in case you want to attempt different set of questions, replace all questions from 1.html to 24.html for CKA( 1.html to 19.html for CKAD) in fodlers `ckadquestions` & `ckaquestions` and then you have new test runtime go for it.
+   ```
+       volumes:
+       - /users/kube/LAB/cka-lab/ckaquestions:/etc/nginx/html/ckaquestions:rw 
+       - /users/kube/LAB/cka-lab/ckadquestions:/etc/nginx/html/ckadquestions:rw
+   ```    
+
+* you have the option to tag the image you build ( `image` in file `docker-compose-builder.yaml` )
+
+* you have the option to chose the DNS settings which will be updated in containers as /etc/resolv.conf ( update `dns_search` and `dns` in file  `docker-compose-builder.yaml` ) 
+
+* file `docker-compose-builder.yaml` 
+
+```
+version: "3"
+
+services:
+
+  gateone:
+    build: ./gateone
+    image: cka-ckad-exam-gateone:latest
+    ports:
+    - "9080:8000"
+    hostname: kubectl
+    networks:
+    - frontend
+    volumes:
+    - ssh_key:/root/.ssh/
+    - /users/kube/.kube/:/root/.kube/
+    dns_search:
+    - corp.example.com
+    - example.com
+    dns:
+    - 10.100.102.1
+    - 10.100.102.2
+
+  lab:
+    build: ./lab
+    image: cka-ckad-exam-lab:latest
+    entrypoint: /opt/entry.bash
+    ports:
+    - "80:80"
+    hostname: exam
+    networks:
+    - frontend
+    volumes:
+    - /users/kube/LAB/cka-lab/ckaquestions:/etc/nginx/html/ckaquestions:rw 
+    - /users/kube/LAB/cka-lab/ckadquestions:/etc/nginx/html/ckadquestions:rw  
+    environment:
+      GATEONE_HTTP_SERVER: "gateone:8000"
+    dns_search:
+    - corp.example.com
+    - example.com
+    dns:
+    - 10.232.217.1
+    - 10.232.217.2
+
+networks:
+  frontend: {}
+volumes:
+  ssh_key: {}
+  ```
+  
+![Home](/images/cka-ckad-home.png)
+![CKA](/images/cka.jpg)
+![CKAD](/images/ckad.jpg)
+![FINISH](/images/cka-finish.jpg)
+
+
+
+# Step by step adoption 
 **you must install docker before do this**. just copy and paste these shells from the two steps, then visit it from your local browser
 
 ### Step 1: Frontend (webpage)
