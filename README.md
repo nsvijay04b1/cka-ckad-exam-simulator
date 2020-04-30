@@ -175,9 +175,9 @@ aa7d3b03f8e9        cka-ckad-exam-gateone:latest                 "gateone --log_
 1dc478bda507        cka-ckad-exam-lab:latest                     "/opt/entry.bash"        2 hours ago         Up 2 hours          0.0.0.0:80->80/tcp                             cka-lab_lab_1
 ```
 
-### Step 4: Accessing the application
+### Step 5: Accessing the application
 
-In the bowser launch the application with  http://<HOSTNAME> or http://<IP> , where HOSTNAME/IP is from where docker-compose is run.
+In the bowser launch the application with  http://\<HOSTNAME> or http://\<IP> , where HOSTNAME/IP is from where docker-compose is run.
    
    
 
