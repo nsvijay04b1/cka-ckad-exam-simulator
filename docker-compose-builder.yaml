@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+
+  gateone:
+    build: ./gateone
+    image: cka-ckad-exam-gateone:latest
+    ports:
+    - "9080:8000"
+    hostname: kubectl
+    networks:
+    - frontend
+    volumes:
+    - ssh_key:/root/.ssh/
+    - /users/kube/.kube/:/root/.kube/
+    dns_search:
+    - corp.example.com
+    - example.com
+    dns:
+    - 10.232.217.1
+    - 10.232.217.2
+
+  lab:
+    build: ./lab
+    image: cka-ckad-exam-lab:latest
+    entrypoint: /opt/entry.bash
+    ports:
+    - "80:80"
+    hostname: exam
+    networks:
+    - frontend
+    volumes:
+    - /users/kube/LAB/cka-lab/ckaquestions:/etc/nginx/html/ckaquestions:rw 
+    - /users/kube/LAB/cka-lab/ckadquestions:/etc/nginx/html/ckadquestions:rw  
+    environment:
+      GATEONE_HTTP_SERVER: "gateone:8000"
+    dns_search:
+    - corp.example.com
+    - example.com
+    dns:
+    - 10.232.217.1
+    - 10.232.217.2
+
+
+networks:
+  frontend: {}
+volumes:
+  ssh_key: {}

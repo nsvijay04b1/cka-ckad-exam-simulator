@@ -1,22 +1,11 @@
-# CKA / CKAD Practice Exam Simulator
+# CKA Practice Environment
 
-## the original repos(only support CKA )
--  [arush-sal/cka-practice-environment](https://github.com/arush-sal/cka-practice-environment) , it's awesome! but hard to use it.
-only support visit the CKA practice environment with URL `http://localhost` or `http://127.0.0.1`, that's **TOO BAD**, cause this constraint, you can **only use MacBook or CentOS/Ubuntu Desktop verison**, if you wanna use a VM on a Cloud, and visit the environment from your local browser, there is no way for you.
+## the MOSTLY DIFFERENCE from the original repo
+thx the orginal repo [arush-sal/cka-practice-environment](https://github.com/arush-sal/cka-practice-environment) by [arush-sal](https://github.com/arush-sal), it's awesome! but hard to use it.
+- only support visit the CKA practice environment with URL `http://localhost` or `http://127.0.0.1`, that's **TOO BAD**, cause this constraint, you can **only use MacBook or CentOS/Ubuntu Desktop verison**, if you wanna use a VM on a Cloud, and visit the environment from your local browser, there is no way for you.
+- and based on my fork, you can **provision the CKA practice environment on a Cloud VM, than visit it with its PUBLIC IP from your local browser**, that's pretty cool
 
--  [satomic/cka-practice-environment](https://github.com/satomic/cka-practice-environment) fixed it, you can **provision the CKA practice environment on a Cloud VM, than visit it with its PUBLIC IP from your local browser**, that's  cool, BUT you have only CKA option not CKAD too, i want to have both options in single platform.
-
-## With my repo, i support both CKA & CKAD in same browser.
-
-- With my repo  [nsvijay04b1/cka-ckad-exam-simulator](https://github.com/nsvijay04b1/cka-ckad-exam-simulator/), i want to make the test available for both `CKA` & `CKAD`.
-  From any browser with http://<PUBLIC_IP>, you can select the test CKA or CKAD and start the test, CKA test timer is `3hrs` and CKAD test timer is `2 hrs`.
-  
-  `questions` folder is a volume mount, in case you want to attempt diffeent set of questions, replace all questions from 1.html to 24.html for CKA( 19.html for CKAD) and then you have new test go for it.
-  
-
-![Home](/images/cka-ckad-home.png)
-![CKA](/images/cka.jpg)
-![CKAD](/images/ckad.jpg)
+![avatar](/images/cka-exam.png)
 
 ## Quick Start (needn't clone the repo)
 **you must install docker before do this**. just copy and paste these shells from the two steps, then visit it from your local browser

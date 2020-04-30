@@ -1,0 +1,6 @@
+1.html
+
+*<h3>Q.Create Multicontainer POD</h3>
+<p>
+    Create a Pod with main container busybox and which executes this “while true; do echo ‘Hi I am from Main container’ >> /var/log/index.html; sleep 5; done” and with sidecar container with nginx image which exposes on port 80. Use emptyDir Volume and mount this volume on path /var/log for busybox and on path /usr/share/nginx/html for nginx container. Verify both containers are running.
+</p>*
