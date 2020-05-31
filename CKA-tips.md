@@ -1,4 +1,4 @@
-### useful kubectl aliases  
+# useful kubectl aliases  
 
 ```
 cat << EOK >> ~/.bashrc
@@ -48,12 +48,12 @@ export PS1="[\u@\h \T  \W]\\$ "   #to set time in the command prompt
 EOK
 ```
 
-# load bash profile
+### load bash profile
 ```
 source ~/.bashrc
 ```
 
-### VIM config file
+# VIM config file
 
 ```
 cat << EOV >> ~/.vimrc
@@ -62,7 +62,7 @@ set backspace=indent,eol,start
 EOV
 ```
 
-### **TMUX commands**
+# **TMUX commands**
 ```
 tmux     # start new
 tmux new -s myname    #start new with session name:
@@ -94,7 +94,7 @@ EOT
 ```
 
 
-### **Tips**
+# **Tips**
 ```
 # set the labels and selector before creating a deployment/service pair.
 kubectl create service clusterip my-svc --clusterip="None" -o yaml --dry-run=client | kubectl set  selector --local -f 'environment=qa' -o yaml | kubectl create -f - 
@@ -120,7 +120,7 @@ kubectl  patch deployments  apple -p '{"spec":{"template":{"spec":{"containers":
 
 
 
-###  **systemctl** 
+#  **systemctl** 
 ```
 sudo systemctl list-unit-files --type service --all | grep -v enabled
 sudo systemctl list-unit-files --type service --all | grep -v running
@@ -130,7 +130,7 @@ sudo systemctl edit nginx.service #add a unit file snippet  to append or overrid
 sudo systemctl edit --full nginx.service #modify the entire content of the unit file
 ```
 
-###  **apt** 
+#  **apt commands for ubuntu** 
 ```
 sudo apt-get install --only-upgrade kubeadm=1.17.0-00
 
